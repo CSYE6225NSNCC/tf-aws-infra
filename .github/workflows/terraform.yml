@@ -1,0 +1,30 @@
+name: Terraform Checks
+
+on:
+  pull_request:
+    branches:
+      - main  # Change this to your default branch
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate terraform
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Format Terraform
+        id: fmt
+        run: terraform fmt -check -list=true -recursive
+
+      - name: Terraform init
+        id: init
+        run: terraform init
+
+      - name: Validate Terraform
+        id: validate
+        run: terraform validate
