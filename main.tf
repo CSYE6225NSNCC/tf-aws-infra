@@ -4,7 +4,7 @@ resource "aws_vpc" "my_vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "MyVPC"
+    Name = "CSYEVPC"
   }
 }
 
@@ -12,7 +12,7 @@ resource "aws_internet_gateway" "my_igw" {
   vpc_id = aws_vpc.my_vpc.id
 
   tags = {
-    Name = "MyInternetGateway"
+    Name = "CSYEInternetGateway"
   }
 }
 
@@ -23,7 +23,7 @@ resource "aws_subnet" "public_subnet" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name = "PublicSubnet${count.index + 1}"
+    Name = "CSYEPublicSubnet${count.index + 1}"
     Type = "Public"
   }
 }
@@ -35,7 +35,7 @@ resource "aws_subnet" "private_subnet" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name = "PrivateSubnet${count.index + 1}"
+    Name = "CSYEPrivateSubnet${count.index + 1}"
     Type = "Private"
   }
 }
@@ -49,7 +49,7 @@ resource "aws_route_table" "public_route_table" {
   }
 
   tags = {
-    Name = "PublicRouteTable"
+    Name = "CSYEPublicRouteTable"
   }
 }
 
