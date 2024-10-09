@@ -21,9 +21,6 @@ jobs:
         id: fmt
         run: terraform fmt -check -list=true -recursive
 
-      - name: Fail intentionally
-        run: exit 1  # This will fail the workflow
-
       - name: Terraform init
         id: init
         run: terraform init
