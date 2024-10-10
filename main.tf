@@ -4,7 +4,7 @@ resource "aws_vpc" "my_vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "CSYEVPC"
+    Name = "Amruta_VPC"
   }
 }
 
@@ -12,7 +12,7 @@ resource "aws_internet_gateway" "my_igw" {
   vpc_id = aws_vpc.my_vpc.id
 
   tags = {
-    Name = "CSYEInternetGateway"
+    Name = "Amruta_InternetGateway"
   }
 }
 
@@ -23,7 +23,7 @@ resource "aws_subnet" "public_subnet" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name = "CSYEPublicSubnet${count.index + 1}"
+    Name = "Amruta_PublicSubnet${count.index + 1}"
     Type = "Public"
   }
 }
@@ -35,7 +35,7 @@ resource "aws_subnet" "private_subnet" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name = "CSYEPrivateSubnet${count.index + 1}"
+    Name = "Amruta_PrivateSubnet${count.index + 1}"
     Type = "Private"
   }
 }
@@ -49,7 +49,7 @@ resource "aws_route_table" "public_route_table" {
   }
 
   tags = {
-    Name = "CSYEPublicRouteTable"
+    Name = "Amruta_PublicRouteTable"
   }
 }
 
@@ -63,7 +63,7 @@ resource "aws_route_table" "private_route_table" {
   vpc_id = aws_vpc.my_vpc.id
 
   tags = {
-    Name = "PrivateRouteTable"
+    Name = "Amruta_PrivateRouteTable"
   }
 }
 
