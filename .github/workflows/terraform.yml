@@ -17,13 +17,13 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Format Terraform
-        id: fmt
-        run: terraform fmt -check -list=true -recursive
-
       - name: Terraform init
         id: init
         run: terraform init
+
+      - name: Format Terraform
+        id: fmt
+        run: terraform fmt -check -list=true -recursive
 
       - name: Validate Terraform
         id: validate
