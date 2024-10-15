@@ -1,5 +1,5 @@
-terraform {
-  required_version = ">= 1.0.0" # Change to your required version
+        terraform {
+   = ">= 1.0.0" # Change to your required version
 
   required_providers {
     aws = {
