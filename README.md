@@ -13,7 +13,7 @@ Before you begin, ensure you have met the following requirements:
 - **AWS Profile**: Ensure you have configured your AWS credentials using the AWS CLI or through environment variables.
 
 ## Configuration
-
+gvcju
 ### Variables
 
 The following variables are used in this project:
