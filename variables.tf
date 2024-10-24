@@ -48,3 +48,68 @@ variable "application_port" {
 variable "key_name" {
   default = "ubuntu"
 }
+
+
+# RDS instance configuration
+
+variable "db_identifier" {
+  description = "The RDS instance identifier"
+  type        = string
+}
+
+variable "db_engine" {
+  description = "The database engine to use"
+  type        = string
+}
+
+variable "db_instance_class" {
+  description = "The instance class for the database"
+  type        = string
+}
+
+variable "allocated_storage" {
+  description = "The allocated storage in gigabytes"
+  type        = number
+}
+
+variable "db_name" {
+  description = "The name of the database"
+  type        = string
+}
+
+variable "db_username" {
+  description = "The master username for the database"
+  type        = string
+}
+
+variable "db_password" {
+  description = "The master password for the database"
+  type        = string
+  sensitive   = true
+}
+
+
+
+variable "db_parameter_group_name" {
+  description = "The name of the parameter group"
+  type        = string
+}
+
+variable "db_max_connections" {
+  description = "The maximum number of connections for the database"
+  type        = number
+}
+
+variable "db_port" {
+  description = "The port on which the application runs."
+}
+
+variable "root_volume_size" {
+  description = "The size of the root EBS volume in gigabytes"
+  type        = number
+}
+
+variable "root_volume_type" {
+  description = "The type of EBS volume"
+  type        = string
+}
