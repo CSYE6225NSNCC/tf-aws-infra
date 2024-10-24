@@ -125,6 +125,24 @@ resource "aws_instance" "web_app_instance" {
   subnet_id                   = aws_subnet.public_subnet[0].id
   key_name                    = var.key_name
 
+  user_data = <<-EOF
+              #!/bin/bash
+
+              # Create a new file named webapp.env in /etc
+
+              sudo chmod 600 /etc/webapp.env
+              sudo chown root:root /etc/webapp.env
+
+              echo "DB_HOST=${aws_db_instance.csye6225.address}" >> /etc/webapp.env
+              echo "DB_USER=csye6225" >> /etc/webapp.env
+              echo "DB_PASSWORD=${var.db_password}" >> /etc/webapp.env
+              echo "DB_NAME=csye6225" >> /etc/webapp.env
+              sudo systemctl daemon-reload
+              sudo systemctl enable webapp.service
+              sleep 30
+              sudo systemctl restart webapp.service
+              EOF
+
   root_block_device {
     volume_size           = 25
     volume_type           = "gp2"
@@ -133,5 +151,72 @@ resource "aws_instance" "web_app_instance" {
 
   tags = {
     Name = "WebAppInstance"
+  }
+}
+
+
+resource "aws_security_group" "db_security_group" {
+  name        = "DBSecurityGroup"
+  description = "Security group for RDS instances to allow access from application security group"
+  vpc_id      = aws_vpc.my_vpc.id
+
+  ingress {
+    from_port       = 3306 # MySQL port
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.app_sg.id]
+  }
+
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"          # Allow all outbound traffic
+    cidr_blocks = ["0.0.0.0/0"] # Modify as per your requirements
+  }
+}
+
+
+
+# Create RDS Parameter Group
+resource "aws_db_parameter_group" "my_db_parameter_group" {
+  name        = "my-db-parameter-group"
+  family      = "mysql8.0" # Change according to your DB engine/version
+  description = "Custom parameter group for MySQL"
+
+  parameter {
+    name  = "max_connections"
+    value = "200" # Example parameter, adjust as necessary
+  }
+}
+
+# Create RDS Instance
+resource "aws_db_instance" "csye6225" {
+  identifier             = "csye6225"
+  engine                 = "mysql"       # Change as needed
+  instance_class         = "db.t3.micro" # Cheapest option
+  allocated_storage      = 20
+  db_name                = "csye6225"
+  username               = "csye6225"
+  password               = var.db_password # Use a strong password
+  db_subnet_group_name   = aws_db_subnet_group.my_private_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.db_security_group.id]
+  multi_az               = false
+  publicly_accessible    = false
+
+  tags = {
+    Name = "CSYE6225 RDS Instance"
+  }
+
+  skip_final_snapshot = true
+}
+
+# RDS Subnet Group
+resource "aws_db_subnet_group" "my_private_subnet_group" {
+  name       = "my-private-subnet-group"
+  subnet_ids = aws_subnet.private_subnet[*].id
+
+  tags = {
+    Name = "Private Subnet Group for RDS"
   }
 }
