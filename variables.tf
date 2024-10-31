@@ -113,3 +113,14 @@ variable "root_volume_type" {
   description = "The type of EBS volume"
   type        = string
 }
+
+variable "zone_id" {
+  description = "The zone_id for the application"
+  type        = string
+}
+
+variable "domain_name" {
+  description = "The main domain name (e.g., subdomain.your-domain-name.tld)"
+  type        = string
+}
+
