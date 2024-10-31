@@ -183,7 +183,7 @@ resource "aws_iam_role" "ec2_role" {
 resource "aws_iam_policy" "custom_s3_policy" {
   name        = "CustomS3Policy"
   description = "Custom policy for S3 access to manage photos"
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -195,10 +195,10 @@ resource "aws_iam_policy" "custom_s3_policy" {
           "s3:PutObject",
           "s3:DeleteObject"
         ]
-        Resource =[
-          "arn:aws:s3:::${aws_s3_bucket.my_bucket.id}" ,
+        Resource = [
+          "arn:aws:s3:::${aws_s3_bucket.my_bucket.id}",
           "arn:aws:s3:::${aws_s3_bucket.my_bucket.id}/*"
-        ]   
+        ]
       }
     ]
   })
@@ -207,7 +207,7 @@ resource "aws_iam_policy" "custom_s3_policy" {
 resource "aws_iam_policy" "custom_cloudwatch_agent_policy" {
   name        = "CustomCloudWatchAgentPolicy"
   description = "Custom policy for CloudWatch Agent access"
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -227,7 +227,7 @@ resource "aws_iam_policy" "custom_cloudwatch_agent_policy" {
 resource "aws_iam_policy" "custom_cloudwatch_logs_policy" {
   name        = "CustomCloudWatchLogsPolicy"
   description = "Custom policy for CloudWatch Logs access"
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -364,12 +364,12 @@ resource "aws_db_parameter_group" "my_db_parameter_group" {
 # Create RDS Instance
 resource "aws_db_instance" "csye6225" {
   identifier             = "csye6225"
-  engine                 = "mysql"       
-  instance_class         = "db.t3.micro" 
+  engine                 = "mysql"
+  instance_class         = "db.t3.micro"
   allocated_storage      = 20
   db_name                = var.db_name
   username               = var.db_username
-  password               = var.db_password 
+  password               = var.db_password
   db_subnet_group_name   = aws_db_subnet_group.my_private_subnet_group.name
   vpc_security_group_ids = [aws_security_group.db_security_group.id]
   multi_az               = false
