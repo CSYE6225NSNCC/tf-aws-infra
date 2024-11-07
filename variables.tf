@@ -141,35 +141,35 @@ variable "min_size" {
 
 variable "health_check_grace_period" {
   description = "The time, in seconds, before an instance is considered unhealthy"
-  type        = number  
+  type        = number
 }
 
 variable "period" {
   description = "The duration, in seconds, during which a healthcheck is performed"
-  type        = number  
+  type        = number
 }
 
-variable "statistic"{
+variable "statistic" {
   description = "The statistic type for the alarm"
-  type        = string  
+  type        = string
 }
 
 variable "scale_up_threshold" {
   description = "THe scale up threshold for the alarm"
-  type        = number  
+  type        = number
 }
 
 variable "scale_down_threshold" {
   description = "The scale down threshold for the alarm"
-  type        = number  
+  type        = number
 }
 
 variable "adjustment_type" {
   description = "The adjustment type for the autoscaling policy"
-  type        = string 
+  type        = string
 }
 
 variable "policy_type" {
   description = "The policy type for the autoscaling policy"
-  type        = string   
+  type        = string
 }

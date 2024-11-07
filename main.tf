@@ -84,14 +84,14 @@ resource "aws_security_group" "app_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port   = var.application_port
-    to_port     = var.application_port
-    protocol    = "tcp"
-    security_groups = [aws_security_group.load_balancer_sg.id]  
+    from_port       = var.application_port
+    to_port         = var.application_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.load_balancer_sg.id]
   }
 
   egress {
@@ -280,7 +280,7 @@ resource "aws_iam_instance_profile" "ec2_instance_profile" {
 #                 echo "DB_NAME=${var.db_name}" >> /etc/webapp.env
 #                 echo "S3_BUCKET_NAME=${aws_s3_bucket.my_bucket.bucket}" >> /etc/webapp.env
 #                 echo "AWS_REGION=${var.aws_region}" >> /etc/webapp.env
-                
+
 #                 #Start cloudwatch agent with config file
 #                 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
 #                     -a fetch-config \
@@ -377,9 +377,9 @@ resource "aws_db_subnet_group" "my_private_subnet_group" {
 
 # Create Route 53 A Record for the application
 resource "aws_route53_record" "app_record" {
-  zone_id    = var.zone_id     #data.aws_route53_zone.my_zone.id
-  name       = var.domain_name # e.g., dev.your-domain-name.tld
-  type       = "A"
+  zone_id = var.zone_id     #data.aws_route53_zone.my_zone.id
+  name    = var.domain_name # e.g., dev.your-domain-name.tld
+  type    = "A"
   //TTL      = 60
   # records    = [aws_instance.web_app_instance.public_ip] //Commented after creating launch template and removing ec2 instance
   # depends_on = [aws_instance.web_app_instance] //Commented after creating launch template and removing ec2 instance
@@ -395,27 +395,27 @@ resource "aws_route53_record" "app_record" {
 resource "aws_security_group" "load_balancer_sg" {
   name        = "load_balancer_sg"
   description = "Security group for the load balancer"
-  vpc_id      = aws_vpc.my_vpc.id  
+  vpc_id      = aws_vpc.my_vpc.id
 
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Allow traffic from anywhere
+    cidr_blocks = ["0.0.0.0/0"] # Allow traffic from anywhere
   }
 
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Allow traffic from anywhere
+    cidr_blocks = ["0.0.0.0/0"] # Allow traffic from anywhere
   }
 
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = "-1"  # Allow all outbound traffic
-    cidr_blocks = ["0.0.0.0/0"]  
+    protocol    = "-1" # Allow all outbound traffic
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
@@ -428,7 +428,7 @@ resource "aws_lb" "my_lb" {
   name               = "my-load-balancer"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.load_balancer_sg.id]  # Attach security group here
+  security_groups    = [aws_security_group.load_balancer_sg.id] # Attach security group here
   subnets            = aws_subnet.public_subnet[*].id
 
   enable_deletion_protection = false
@@ -440,7 +440,7 @@ resource "aws_launch_template" "web_app_template" {
   image_id      = var.custom_ami_id
   instance_type = "t2.micro"
   key_name      = var.key_name
-  user_data     = base64encode(<<-EOF
+  user_data = base64encode(<<-EOF
                   #!/bin/bash
                     # Create a new file named webapp.env in /etc
 
@@ -469,7 +469,7 @@ resource "aws_launch_template" "web_app_template" {
                     sleep 30
                     sudo systemctl restart webapp.service
                   EOF
-                  )
+  )
   iam_instance_profile {
     name = aws_iam_instance_profile.ec2_instance_profile.name
   }
@@ -482,10 +482,10 @@ resource "aws_launch_template" "web_app_template" {
       delete_on_termination = true
     }
   }
-  
+
   network_interfaces {
     associate_public_ip_address = true
-    security_groups = [aws_security_group.app_sg.id]
+    security_groups             = [aws_security_group.app_sg.id]
   }
   tag_specifications {
     resource_type = "instance"
@@ -499,9 +499,9 @@ resource "aws_launch_template" "web_app_template" {
 #Auto Scaling Group that utilizes the Launch Template just created
 
 resource "aws_autoscaling_group" "web_app_asg" {
-  desired_capacity     = var.desired_capacity  # Desired number of instances
-  min_size             = var.min_size  # Minimum number of instances
-  max_size             = var.max_size  # Maximum number of instances
+  desired_capacity    = var.desired_capacity # Desired number of instances
+  min_size            = var.min_size         # Minimum number of instances
+  max_size            = var.max_size         # Maximum number of instances
   vpc_zone_identifier = aws_subnet.public_subnet[*].id
 
   launch_template {
@@ -519,8 +519,8 @@ resource "aws_autoscaling_group" "web_app_asg" {
     propagate_at_launch = true
   }
 
-  health_check_type          = "EC2"
-  health_check_grace_period  = var.health_check_grace_period
+  health_check_type         = "EC2"
+  health_check_grace_period = var.health_check_grace_period
 }
 
 
@@ -529,15 +529,15 @@ resource "aws_autoscaling_group" "web_app_asg" {
 
 resource "aws_lb_target_group" "web_app_target_group" {
   name     = "web-app-target-group"
-  port     = var.application_port  
+  port     = var.application_port
   protocol = "HTTP"
   vpc_id   = aws_vpc.my_vpc.id
 
   health_check {
-    path                = "/healthz"  
+    path                = "/healthz"
     interval            = 30
     timeout             = 5
-    healthy_threshold  = 3
+    healthy_threshold   = 3
     unhealthy_threshold = 2
   }
   tags = {
@@ -566,13 +566,13 @@ resource "aws_cloudwatch_metric_alarm" "scale_up_alarm" {
   alarm_name          = "scale-up-alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
-  metric_name        = "CPUUtilization"
-  namespace          = "AWS/EC2"
-  period             = var.period
-  statistic          = var.statistic
-  threshold          = var.scale_up_threshold
-  alarm_description  = "Alarm when CPU exceeds 5%"
-  alarm_actions      = [aws_autoscaling_policy.scale_up_policy.arn]
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = var.period
+  statistic           = var.statistic
+  threshold           = var.scale_up_threshold
+  alarm_description   = "Alarm when CPU exceeds 5%"
+  alarm_actions       = [aws_autoscaling_policy.scale_up_policy.arn]
 
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.web_app_asg.name
@@ -583,13 +583,13 @@ resource "aws_cloudwatch_metric_alarm" "scale_down_alarm" {
   alarm_name          = "scale-down-alarm"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 1
-  metric_name        = "CPUUtilization"
-  namespace          = "AWS/EC2"
-  period             = var.period
-  statistic          = var.statistic
-  threshold          = var.scale_down_threshold
-  alarm_description  = "Alarm when CPU is below 3%"
-  alarm_actions      = [aws_autoscaling_policy.scale_down_policy.arn]
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = var.period
+  statistic           = var.statistic
+  threshold           = var.scale_down_threshold
+  alarm_description   = "Alarm when CPU is below 3%"
+  alarm_actions       = [aws_autoscaling_policy.scale_down_policy.arn]
 
   dimensions = {
     AutoScalingGroupName = aws_autoscaling_group.web_app_asg.name
@@ -601,7 +601,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_down_alarm" {
 resource "aws_autoscaling_policy" "scale_up_policy" {
   name                   = "scale-up-policy"
   adjustment_type        = var.adjustment_type
-  scaling_adjustment      = 1
+  scaling_adjustment     = 1
   cooldown               = 60
   autoscaling_group_name = aws_autoscaling_group.web_app_asg.name
   policy_type            = var.policy_type
@@ -610,7 +610,7 @@ resource "aws_autoscaling_policy" "scale_up_policy" {
 resource "aws_autoscaling_policy" "scale_down_policy" {
   name                   = "scale-down-policy"
   adjustment_type        = var.adjustment_type
-  scaling_adjustment      = -1
+  scaling_adjustment     = -1
   cooldown               = 60
   autoscaling_group_name = aws_autoscaling_group.web_app_asg.name
   policy_type            = var.policy_type
