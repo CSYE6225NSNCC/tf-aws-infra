@@ -124,3 +124,52 @@ variable "domain_name" {
   type        = string
 }
 
+variable "desired_capacity" {
+  description = "The desired number of EC2 instances"
+  type        = number
+}
+
+variable "max_size" {
+  description = "The maximum number of EC2 instances"
+  type        = number
+}
+
+variable "min_size" {
+  description = "The minimum number of EC2 instances"
+  type        = number
+}
+
+variable "health_check_grace_period" {
+  description = "The time, in seconds, before an instance is considered unhealthy"
+  type        = number  
+}
+
+variable "period" {
+  description = "The duration, in seconds, during which a healthcheck is performed"
+  type        = number  
+}
+
+variable "statistic"{
+  description = "The statistic type for the alarm"
+  type        = string  
+}
+
+variable "scale_up_threshold" {
+  description = "THe scale up threshold for the alarm"
+  type        = number  
+}
+
+variable "scale_down_threshold" {
+  description = "The scale down threshold for the alarm"
+  type        = number  
+}
+
+variable "adjustment_type" {
+  description = "The adjustment type for the autoscaling policy"
+  type        = string 
+}
+
+variable "policy_type" {
+  description = "The policy type for the autoscaling policy"
+  type        = string   
+}
