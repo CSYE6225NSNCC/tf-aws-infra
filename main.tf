@@ -248,6 +248,7 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_logs_policy_attachment" {
   role       = aws_iam_role.ec2_role.name
 }
 
+
 # Create IAM Instance Profile
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
   name = "EC2InstanceProfile"
@@ -402,6 +403,7 @@ resource "aws_security_group" "load_balancer_sg" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Allow traffic from anywhere
+    ipv6_cidr_blocks = ["::/0"]
   }
 
   ingress {
@@ -409,6 +411,7 @@ resource "aws_security_group" "load_balancer_sg" {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Allow traffic from anywhere
+    ipv6_cidr_blocks = ["::/0"]
   }
 
   egress {
@@ -416,6 +419,7 @@ resource "aws_security_group" "load_balancer_sg" {
     to_port     = 0
     protocol    = "-1" # Allow all outbound traffic
     cidr_blocks = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
 
   tags = {
@@ -436,7 +440,7 @@ resource "aws_lb" "my_lb" {
 
 #Launch Template
 resource "aws_launch_template" "web_app_template" {
-  name_prefix   = "csye6225_asg-"
+  name   = var.launch_template
   image_id      = var.custom_ami_id
   instance_type = "t2.micro"
   key_name      = var.key_name
@@ -453,6 +457,7 @@ resource "aws_launch_template" "web_app_template" {
                     echo "DB_NAME=${var.db_name}" >> /etc/webapp.env
                     echo "S3_BUCKET_NAME=${aws_s3_bucket.my_bucket.bucket}" >> /etc/webapp.env
                     echo "AWS_REGION=${var.aws_region}" >> /etc/webapp.env
+                    echo "VERIFICATION_TOPIC_ARN=${aws_sns_topic.user_verification_topic.arn}" >> /etc/webapp.env
                     
                     #Start cloudwatch agent with config file
                     sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
@@ -499,6 +504,7 @@ resource "aws_launch_template" "web_app_template" {
 #Auto Scaling Group that utilizes the Launch Template just created
 
 resource "aws_autoscaling_group" "web_app_asg" {
+  name                = var.asg
   desired_capacity    = var.desired_capacity # Desired number of instances
   min_size            = var.min_size         # Minimum number of instances
   max_size            = var.max_size         # Maximum number of instances
@@ -614,4 +620,137 @@ resource "aws_autoscaling_policy" "scale_down_policy" {
   cooldown               = 60
   autoscaling_group_name = aws_autoscaling_group.web_app_asg.name
   policy_type            = var.policy_type
+}
+
+
+# Define the SNS Topic
+resource "aws_sns_topic" "user_verification_topic" {
+  name = "user-verification-topic"
+}
+
+output "user_verification_topic_arn" {
+  value = aws_sns_topic.user_verification_topic.arn
+}
+
+
+resource "aws_sns_topic_policy" "verification_topic_policy" {
+  arn =  aws_sns_topic.user_verification_topic.arn
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Id      = "EmailVerificationTopicPolicy",
+    Statement = [
+      {
+        Sid    = "AllowLambdaToPublish",
+        Effect = "Allow",
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        },
+        Action   = "sns:Publish",
+        Resource =  aws_sns_topic.user_verification_topic.arn,
+        Condition = {
+          ArnLike : {
+            "AWS:SourceArn" : aws_lambda_function.user_verification_lambda.arn
+          }
+        }
+      },
+      {
+        Sid    = "AllowSpecificIAMRoleToPublish",
+        Effect = "Allow",
+        Principal = {
+          AWS = aws_iam_role.ec2_role.arn
+        },
+        Action   = "sns:Publish",
+        Resource = aws_sns_topic.user_verification_topic.arn
+      }
+    ]
+  })
+}
+resource "aws_lambda_function" "user_verification_lambda" {
+  function_name = "UserVerificationLambda"
+  role          = aws_iam_role.lambda_execution_role.arn
+  handler       = "index.handler"
+  runtime       = "nodejs18.x"
+  timeout       = 120
+  memory_size       = 128
+    # Ensure your Lambda zip file exists or use S3 for deployment
+  filename      = "C:/Users/Amruta/OneDrive/Documents/Northeastern University/Semester 2/Cloud/Assignments/Assignment 8/serverless/verification-lambda.zip"
+
+  environment {
+    variables = {
+
+      BASE_URL          = "http://${aws_lb.my_lb.dns_name}"
+      SENDGRID_API_KEY  = var.sendgrid_api_key
+      EMAIL_FROM        = var.email_from
+    }
+  }
+}
+
+
+resource "aws_iam_role" "lambda_execution_role" {
+  name = "LambdaExecutionRole"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action    = "sts:AssumeRole",
+        Principal = { Service = "lambda.amazonaws.com" },
+        Effect    = "Allow"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "lambda_policy" {
+  name        = "LambdaSNSRDSPolicy"
+  description = "Policy for Lambda to access SNS, RDS, and EC2 for VPC connectivity"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = ["sns:Publish"],
+        Resource = aws_sns_topic.user_verification_topic.arn
+      },
+      {
+        Effect   = "Allow",
+        Action   = [
+          "rds-db:connect",
+          "rds:DescribeDBInstances",
+        ],
+        Resource = aws_db_instance.csye6225.arn
+      },
+      {
+        Effect   = "Allow",
+        Action   = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.lambda_policy.arn
+}
+
+#Create SNS Topic Subscription to Lambda
+resource "aws_sns_topic_subscription" "sns_lambda_subscription" {
+  topic_arn = aws_sns_topic.user_verification_topic.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.user_verification_lambda.arn
+}
+
+#Allow SNS to Invoke Lambda
+resource "aws_lambda_permission" "allow_sns_invocation" {
+  statement_id  = "AllowSNSInvoke"
+  action        = "lambda:InvokeFunction"
+  principal     = "sns.amazonaws.com"
+  function_name = aws_lambda_function.user_verification_lambda.function_name
+  source_arn    = aws_sns_topic.user_verification_topic.arn
 }

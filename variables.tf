@@ -173,3 +173,23 @@ variable "policy_type" {
   description = "The policy type for the autoscaling policy"
   type        = string
 }
+
+variable "sendgrid_api_key" {
+  description = "The SendGrid API key for sending emails"
+  type        = string
+  sensitive   = true
+}
+variable "email_from" {
+  description = "The email address from which the emails will be sent"
+  type        = string
+}
+
+variable "launch_template"{
+  description = "aws launch template"
+  type = string
+}
+
+variable "asg"{
+  description = "=Auto scaling group"
+  type= string
+}
