@@ -184,12 +184,12 @@ variable "email_from" {
   type        = string
 }
 
-variable "launch_template"{
+variable "launch_template" {
   description = "aws launch template"
-  type = string
+  type        = string
 }
 
-variable "asg"{
+variable "asg" {
   description = "=Auto scaling group"
-  type= string
+  type        = string
 }

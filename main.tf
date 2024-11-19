@@ -399,26 +399,26 @@ resource "aws_security_group" "load_balancer_sg" {
   vpc_id      = aws_vpc.my_vpc.id
 
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allow traffic from anywhere
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"] # Allow traffic from anywhere
     ipv6_cidr_blocks = ["::/0"]
   }
 
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allow traffic from anywhere
+    from_port        = 443
+    to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"] # Allow traffic from anywhere
     ipv6_cidr_blocks = ["::/0"]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1" # Allow all outbound traffic
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1" # Allow all outbound traffic
+    cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
 
@@ -440,7 +440,7 @@ resource "aws_lb" "my_lb" {
 
 #Launch Template
 resource "aws_launch_template" "web_app_template" {
-  name   = var.launch_template
+  name          = var.launch_template
   image_id      = var.custom_ami_id
   instance_type = "t2.micro"
   key_name      = var.key_name
@@ -634,7 +634,7 @@ output "user_verification_topic_arn" {
 
 
 resource "aws_sns_topic_policy" "verification_topic_policy" {
-  arn =  aws_sns_topic.user_verification_topic.arn
+  arn = aws_sns_topic.user_verification_topic.arn
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -647,7 +647,7 @@ resource "aws_sns_topic_policy" "verification_topic_policy" {
           Service = "lambda.amazonaws.com"
         },
         Action   = "sns:Publish",
-        Resource =  aws_sns_topic.user_verification_topic.arn,
+        Resource = aws_sns_topic.user_verification_topic.arn,
         Condition = {
           ArnLike : {
             "AWS:SourceArn" : aws_lambda_function.user_verification_lambda.arn
@@ -672,16 +672,16 @@ resource "aws_lambda_function" "user_verification_lambda" {
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 120
-  memory_size       = 128
-    # Ensure your Lambda zip file exists or use S3 for deployment
-  filename      = "C:/Users/Amruta/OneDrive/Documents/Northeastern University/Semester 2/Cloud/Assignments/Assignment 8/serverless/verification-lambda.zip"
+  memory_size   = 128
+  # Ensure your Lambda zip file exists or use S3 for deployment
+  filename = "C:/Users/Amruta/OneDrive/Documents/Northeastern University/Semester 2/Cloud/Assignments/Assignment 8/serverless/verification-lambda.zip"
 
   environment {
     variables = {
 
-      BASE_URL          = "http://${aws_lb.my_lb.dns_name}"
-      SENDGRID_API_KEY  = var.sendgrid_api_key
-      EMAIL_FROM        = var.email_from
+      BASE_URL         = "http://${aws_lb.my_lb.dns_name}"
+      SENDGRID_API_KEY = var.sendgrid_api_key
+      EMAIL_FROM       = var.email_from
     }
   }
 }
@@ -714,16 +714,16 @@ resource "aws_iam_policy" "lambda_policy" {
         Resource = aws_sns_topic.user_verification_topic.arn
       },
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "rds-db:connect",
           "rds:DescribeDBInstances",
         ],
         Resource = aws_db_instance.csye6225.arn
       },
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents"
