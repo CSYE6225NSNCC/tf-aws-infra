@@ -242,20 +242,20 @@ resource "aws_iam_policy" "custom_secrets_manager_policy" {
       {
         Effect = "Allow",
         Action = [
-        "secretsmanager:GetSecretValue",
-        "secretsmanager:DescribeSecret"
-      ],
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ],
         Resource = [
           aws_secretsmanager_secret.db_password_secret.arn,
           aws_secretsmanager_secret.email_credentials_secret.arn
         ]
       },
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "kms:Decrypt",
           "kms:GenerateDataKey"
-          ],
+        ],
         Resource = aws_kms_key.secrets_key.arn
       }
     ]
@@ -353,7 +353,7 @@ resource "aws_launch_template" "web_app_template" {
                     sleep 30
                     sudo systemctl restart webapp.service
                   EOF
-              )
+  )
   iam_instance_profile {
     name = aws_iam_instance_profile.ec2_instance_profile.name
   }
@@ -451,9 +451,9 @@ resource "aws_db_subnet_group" "my_private_subnet_group" {
 //  zone_id = var.zone_id     #data.aws_route53_zone.my_zone.id
 //  name    = var.domain_name # e.g., dev.your-domain-name.tld
 //  type    = "A"
-  //TTL      = 60
-  # records    = [aws_instance.web_app_instance.public_ip] //Commented after creating launch template and removing ec2 instance
-  # depends_on = [aws_instance.web_app_instance] //Commented after creating launch template and removing ec2 instance
+//TTL      = 60
+# records    = [aws_instance.web_app_instance.public_ip] //Commented after creating launch template and removing ec2 instance
+# depends_on = [aws_instance.web_app_instance] //Commented after creating launch template and removing ec2 instance
 //  alias {
 //    name                   = aws_lb.my_lb.dns_name
 //    zone_id                = aws_lb.my_lb.zone_id
@@ -510,7 +510,7 @@ resource "aws_autoscaling_group" "web_app_asg" {
   launch_template {
     id      = aws_launch_template.web_app_template.id
     version = "$Latest"
-    
+
   }
 
   # Attach the target group to the Auto Scaling Group 
@@ -548,21 +548,21 @@ resource "aws_lb_target_group" "web_app_target_group" {
 
 data "aws_acm_certificate" "imported_certificate" {
   domain = var.domain_name
- 
+
   # Optional: If you have multiple certificates, use this to ensure the correct one is fetched.
-  statuses = ["ISSUED"]
-  types    = ["IMPORTED"]
+  statuses    = ["ISSUED"]
+  types       = ["IMPORTED"]
   most_recent = true
 }
- 
- 
+
+
 resource "aws_lb_listener" "https_listener" {
   load_balancer_arn = aws_lb.my_lb.arn
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
   certificate_arn   = data.aws_acm_certificate.imported_certificate.arn
- 
+
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web_app_target_group.arn
@@ -639,17 +639,17 @@ resource "aws_autoscaling_policy" "scale_down_policy" {
 }
 
 resource "aws_iam_role" "asg_role" {
-  name               = "ASGRole"
+  name = "ASGRole"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Action    = "sts:AssumeRole",
+        Action = "sts:AssumeRole",
         Principal = {
           Service = "ec2.amazonaws.com"
         },
-        Effect    = "Allow",
-        Sid       = ""
+        Effect = "Allow",
+        Sid    = ""
       }
     ]
   })
@@ -888,7 +888,7 @@ resource "aws_kms_key" "rds_key" {
       {
         "Sid" : "Allow attachment of persistent resources",
         "Effect" : "Allow",
-        "Principal" : { 
+        "Principal" : {
           "AWS" : [
             "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
           ]
@@ -982,8 +982,8 @@ resource "aws_kms_key" "secrets_key" {
         Effect = "Allow",
         Principal = {
           AWS = [
-            "${aws_iam_role.lambda_execution_role.arn}", 
-            "${aws_iam_role.ec2_role.arn}" 
+            "${aws_iam_role.lambda_execution_role.arn}",
+            "${aws_iam_role.ec2_role.arn}"
           ]
         },
         Action = [
@@ -1070,12 +1070,12 @@ resource "aws_route53_record" "webapp_https" {
 resource "aws_iam_policy" "asg_policy" {
   name        = "ASGPolicy"
   description = "Policy for Auto Scaling, EC2, ELB, and CloudWatch actions"
-  policy      = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Effect    = "Allow",
-        Action    = [
+        Effect = "Allow",
+        Action = [
           "autoscaling:DescribeAutoScalingGroups",
           "autoscaling:UpdateAutoScalingGroup",
           "autoscaling:DescribeLaunchConfigurations",
@@ -1083,11 +1083,11 @@ resource "aws_iam_policy" "asg_policy" {
           "autoscaling:TerminateInstanceInAutoScalingGroup",
           "autoscaling:SetDesiredCapacity"
         ],
-        Resource  = "*"
+        Resource = "*"
       },
       {
-        Effect    = "Allow",
-        Action    = [
+        Effect = "Allow",
+        Action = [
           "ec2:DescribeInstances",
           "ec2:DescribeInstanceStatus",
           "ec2:DescribeLaunchTemplates",
@@ -1098,11 +1098,11 @@ resource "aws_iam_policy" "asg_policy" {
           "ec2:CreateTags",
           "ec2:DescribeSecurityGroups"
         ],
-        Resource  = "*"
+        Resource = "*"
       },
       {
-        Effect    = "Allow",
-        Action    = [
+        Effect = "Allow",
+        Action = [
           "elasticloadbalancing:DescribeTargetGroups",
           "elasticloadbalancing:RegisterTargets",
           "elasticloadbalancing:DeregisterTargets",
@@ -1111,20 +1111,20 @@ resource "aws_iam_policy" "asg_policy" {
           "elasticloadbalancing:ModifyTargetGroup",
           "elasticloadbalancing:DescribeTargetHealth"
         ],
-        Resource  = "*"
+        Resource = "*"
       },
       {
-        Effect    = "Allow",
-        Action    = [
+        Effect = "Allow",
+        Action = [
           "kms:Encrypt",
           "kms:Decrypt",
           "kms:GenerateDataKey",
           "kms:ReEncrypt*"
         ],
-        Resource  = [
-          "${aws_kms_key.ec2_key.arn}",     
-          "${aws_kms_key.rds_key.arn}",     
-          "${aws_kms_key.s3_key.arn}"       
+        Resource = [
+          "${aws_kms_key.ec2_key.arn}",
+          "${aws_kms_key.rds_key.arn}",
+          "${aws_kms_key.s3_key.arn}"
         ]
       }
     ]
