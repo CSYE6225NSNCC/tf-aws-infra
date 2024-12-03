@@ -711,15 +711,14 @@ resource "aws_sns_topic_policy" "verification_topic_policy" {
 }
 
 resource "aws_lambda_function" "user_verification_lambda" {
-  function_name = "UserVerificationLambda"
+  function_name = "UserVerificationLambda-2"
   role          = aws_iam_role.lambda_execution_role.arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 120
   memory_size   = 128
   # Ensure your Lambda zip file exists or use S3 for deployment
-  filename = "C:/Users/Amruta/OneDrive/Documents/Northeastern University/Semester 2/Cloud/Assignments/Assignment 9/serverless-fork/verification-lambda.zip"
-
+  filename = "C:/Users/Amruta/OneDrive/Documents/Northeastern University/Semester 2/Cloud/Assignments/Assignment 9/serverless/verification-lambda/verification_lamb.zip"
 }
 
 resource "aws_iam_role" "lambda_execution_role" {
@@ -795,7 +794,6 @@ resource "aws_lambda_permission" "allow_sns_invocation" {
   source_arn    = aws_sns_topic.user_verification_topic.arn
 }
 
-
 resource "aws_kms_key" "ec2_key" {
   description         = "KMS key for encrypting EC2 volumes with full administrative access"
   enable_key_rotation = true
@@ -850,7 +848,6 @@ resource "aws_kms_key" "ec2_key" {
     ] }
   )
 }
-
 
 resource "aws_kms_key" "rds_key" {
   description         = "KMS key for encrypting RDS instance"
